@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ยินดีต้อนรับ - โรงเรียนนราศึกษา</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #005b9f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        .card {
+            background-color: white;
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            border-top: 6px solid #004080;
+        }
+        .welcome-text {
+            color: #004080;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .school-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 5px;
+        }
+        .location {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+        .btn-primary {
+            display: inline-block;
+            background-color: #005b9f;
+            color: white;
+            text-decoration: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 91, 159, 0.4);
+        }
+        .btn-primary:hover {
+            background-color: #003366;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 51, 102, 0.5);
+        }
+        .footer-text {
+            margin-top: 35px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1 class="welcome-text">ยินดีต้อนรับ</h1>
+        <div class="school-name">โรงเรียนนราศึกษา</div>
+        <div class="location">อ.เมืองนราธิวาส จ.นราธิวาส</div>
+        
+        <!-- ลิงก์สำหรับเข้าหน้าระบบนิเทศออนไลน์ -->
+        <a href="#" class="btn-primary">เข้าสู่ระบบนิเทศออนไลน์</a>
+        
+        <div class="footer-text">
+            © ระบบนิเทศออนไลน์ โรงเรียนนราศึกษา
+        </div>
+    </div>
+
+</body>
+</html>
