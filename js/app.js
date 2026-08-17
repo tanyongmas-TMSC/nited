@@ -203,10 +203,158 @@ const app = {
         if(pass === 'admin1234') {
             document.getElementById('adminLogin').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            alert('กำลังพัฒนาระบบหลังบ้านในส่วนต่อไป...');
+            this.loadAdminBookings();
         } else {
             alert('รหัสผ่านไม่ถูกต้อง');
         }
+    },
+
+    submitEvaluation: function(e) {
+        e.preventDefault();
+        this.showLoader('กำลังบันทึกผลการประเมิน...');
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        data.action = 'submitEvaluation';
+
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            this.hideLoader();
+            if(res.status === 'success') {
+                alert('บันทึกผลการประเมินสำเร็จ!');
+                form.reset();
+            } else {
+                alert('เกิดข้อผิดพลาด: ' + res.message);
+            }
+        })
+        .catch(err => { this.hideLoader(); alert('เกิดข้อผิดพลาดในการเชื่อมต่อ'); });
+    },
+
+    loadAdminBookings: function() {
+        document.getElementById('adminBookingsSection').style.display = 'block';
+        document.getElementById('adminFilesSection').style.display = 'none';
+        this.showLoader('กำลังโหลดคำขอจอง...');
+
+        fetch(CONFIG.GAS_URL + "?action=getBookings")
+            .then(res => res.json())
+            .then(res => {
+                this.hideLoader();
+                if(res.status === 'success') this.renderAdminBookings(res.data);
+            })
+            .catch(err => { this.hideLoader(); alert('โหลดข้อมูลล้มเหลว'); });
+    },
+
+    renderAdminBookings: function(bookings) {
+        const tbody = document.querySelector('#adminBookingsTable tbody');
+        tbody.innerHTML = '';
+        if(bookings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">ไม่มีข้อมูล</td></tr>';
+            return;
+        }
+
+        bookings.reverse().forEach(b => {
+            let badgeClass = 'badge-pending';
+            if(b.Status === 'ยืนยันแล้ว' || b.Status === 'นิเทศแล้ว') badgeClass = 'badge-success';
+            if(b.Status === 'ปฏิเสธ') badgeClass = 'badge-danger';
+            
+            let dateStr = new Date(b.Date).toLocaleDateString('th-TH');
+            
+            let btnConfirm = `<button class="btn btn-success" style="padding:5px 10px; font-size:12px;" onclick="app.updateBookingStatus(${b.rowIndex}, 'ยืนยันแล้ว')">ยืนยัน</button>`;
+            let btnReject = `<button class="btn btn-danger" style="padding:5px 10px; font-size:12px; background:#dc3545;" onclick="app.updateBookingStatus(${b.rowIndex}, 'ปฏิเสธ')">ปฏิเสธ</button>`;
+            let btnDone = `<button class="btn btn-primary" style="padding:5px 10px; font-size:12px;" onclick="app.updateBookingStatus(${b.rowIndex}, 'นิเทศแล้ว')">นิเทศแล้ว</button>`;
+
+            let tr = `<tr>
+                <td>${dateStr}</td>
+                <td>${b.Period}</td>
+                <td>${b['Teacher Name']}</td>
+                <td>${b['Subject Name']}</td>
+                <td><span class="badge ${badgeClass}">${b.Status}</span></td>
+                <td>${btnConfirm} ${btnReject} ${btnDone}</td>
+            </tr>`;
+            tbody.innerHTML += tr;
+        });
+    },
+
+    updateBookingStatus: function(rowIndex, status) {
+        if(!confirm(`ยืนยันการเปลี่ยนสถานะเป็น "${status}" ?`)) return;
+        this.showLoader('กำลังอัปเดตสถานะ...');
+        
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'updateBookingStatus', rowIndex: rowIndex, status: status })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.status === 'success') this.loadAdminBookings();
+            else { this.hideLoader(); alert('เกิดข้อผิดพลาด'); }
+        });
+    },
+
+    loadAdminFiles: function() {
+        document.getElementById('adminBookingsSection').style.display = 'none';
+        document.getElementById('adminFilesSection').style.display = 'block';
+        this.showLoader('กำลังโหลดข้อมูลไฟล์งาน...');
+
+        fetch(CONFIG.GAS_URL + "?action=getFiles")
+            .then(res => res.json())
+            .then(res => {
+                this.hideLoader();
+                if(res.status === 'success') this.renderAdminFiles(res.data);
+            })
+            .catch(err => { this.hideLoader(); alert('โหลดข้อมูลล้มเหลว'); });
+    },
+
+    renderAdminFiles: function(files) {
+        const tbody = document.querySelector('#adminFilesTable tbody');
+        tbody.innerHTML = '';
+        if(files.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">ไม่มีข้อมูลไฟล์ส่ง</td></tr>';
+            return;
+        }
+
+        files.reverse().forEach(f => {
+            let badgeClass = 'badge-pending';
+            if(f.Status === 'ผ่าน') badgeClass = 'badge-success';
+            if(f.Status === 'ขอแก้ไข') badgeClass = 'badge-danger';
+            
+            let dateStr = new Date(f.Timestamp).toLocaleDateString('th-TH');
+            let fileLink = f['Drive File ID'] === 'LINK_ONLY' 
+                ? `<a href="${f['File URL/Link']}" target="_blank">เปิดลิงก์</a>` 
+                : `<a href="${f['File URL/Link']}" target="_blank">ดูไฟล์</a>`;
+
+            let btnApprove = `<button class="btn btn-success" style="padding:5px 10px; font-size:12px;" onclick="app.updateFileStatus(${f.rowIndex}, 'ผ่าน')">ผ่าน</button>`;
+            let btnReject = `<button class="btn btn-danger" style="padding:5px 10px; font-size:12px; background:#dc3545;" onclick="app.updateFileStatus(${f.rowIndex}, 'ขอแก้ไข')">ขอแก้ไข</button>`;
+
+            let tr = `<tr>
+                <td>${dateStr}</td>
+                <td>${f['Teacher Name']}</td>
+                <td>${f['File Type']}</td>
+                <td>${fileLink}</td>
+                <td><span class="badge ${badgeClass}">${f.Status}</span></td>
+                <td>${btnApprove} ${btnReject}</td>
+            </tr>`;
+            tbody.innerHTML += tr;
+        });
+    },
+
+    updateFileStatus: function(rowIndex, status) {
+        if(!confirm(`ยืนยันการเปลี่ยนสถานะเป็น "${status}" ?`)) return;
+        this.showLoader('กำลังอัปเดตสถานะ...');
+        
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'updateFileStatus', rowIndex: rowIndex, status: status })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.status === 'success') this.loadAdminFiles();
+            else { this.hideLoader(); alert('เกิดข้อผิดพลาด'); }
+        });
     }
 };
 

@@ -201,30 +201,114 @@
         <!-- Evaluation Page -->
         <section id="evaluation" class="page">
             <div class="page-header">
-                <h1 class="page-title">ประเมินผลการนิเทศ (สำหรับผู้บริหาร)</h1>
+                <h1 class="page-title">บันทึกผลการนิเทศ (สำหรับผู้บริหาร/ผู้นิเทศ)</h1>
             </div>
             <div class="card">
-                <p>อยู่ระหว่างการพัฒนา UI...</p>
+                <form id="evalForm" onsubmit="app.submitEvaluation(event)">
+                    <div class="stats-grid">
+                        <div class="form-group">
+                            <label>ชื่อครูผู้รับการนิเทศ</label>
+                            <input type="text" class="form-control" name="teacherName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>วันที่ทำการนิเทศ</label>
+                            <input type="date" class="form-control" name="supervisionDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>จุดเด่น</label>
+                        <textarea class="form-control" name="strengths" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>จุดที่ควรพัฒนา</label>
+                        <textarea class="form-control" name="improvements" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>ข้อเสนอแนะเพิ่มเติม</label>
+                        <textarea class="form-control" name="suggestions" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>สรุปผลการประเมิน (ระดับคุณภาพ)</label>
+                        <select class="form-control" name="summaryLevel" required>
+                            <option value="">-- เลือกระดับ --</option>
+                            <option value="ดีมาก">ดีมาก</option>
+                            <option value="ดี">ดี</option>
+                            <option value="พอใช้">พอใช้</option>
+                            <option value="ปรับปรุง">ปรับปรุง</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> บันทึกผลประเมิน</button>
+                </form>
             </div>
         </section>
 
         <!-- Admin Page -->
         <section id="admin" class="page">
             <div class="page-header">
-                <h1 class="page-title">ส่วนของผู้ดูแลระบบ</h1>
+                <h1 class="page-title">ระบบจัดการ (Admin)</h1>
             </div>
+            
+            <!-- Login -->
             <div class="card" id="adminLogin">
-                <h3>เข้าสู่ระบบ</h3>
+                <h3 style="margin-bottom:15px; color:var(--primary-color);"><i class="fas fa-lock"></i> เข้าสู่ระบบผู้ดูแล</h3>
                 <div class="form-group">
                     <label>รหัสผ่าน</label>
-                    <input type="password" class="form-control" id="adminPass">
+                    <input type="password" class="form-control" id="adminPass" placeholder="ใส่รหัสผ่าน admin1234">
                 </div>
-                <button class="btn btn-primary" onclick="app.loginAdmin()">Login</button>
+                <button class="btn btn-primary" onclick="app.loginAdmin()">เข้าสู่ระบบ</button>
             </div>
+
+            <!-- Dashboard Admin -->
             <div id="adminPanel" style="display:none;">
-                <div class="card">
-                    <h3>จัดการการจอง</h3>
-                    <!-- Admin table will be injected here -->
+                <!-- แท็บเมนูใน Admin -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="app.loadAdminBookings()"><i class="fas fa-calendar-alt"></i> คำขอจองวันนิเทศ</button>
+                    <button class="btn btn-primary" style="background-color:#17a2b8;" onclick="app.loadAdminFiles()"><i class="fas fa-folder-open"></i> ตรวจสอบไฟล์งาน</button>
+                </div>
+
+                <!-- ตารางจัดการการจอง -->
+                <div class="card" id="adminBookingsSection">
+                    <h3><i class="fas fa-tasks"></i> จัดการคำขอจองนิเทศ</h3>
+                    <div class="table-responsive">
+                        <table id="adminBookingsTable">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>คาบ/เวลา</th>
+                                    <th>ครูผู้สอน</th>
+                                    <th>วิชา</th>
+                                    <th>สถานะปัจจุบัน</th>
+                                    <th>การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ตารางตรวจไฟล์ -->
+                <div class="card" id="adminFilesSection" style="display:none;">
+                    <h3><i class="fas fa-file-alt"></i> ตรวจสอบไฟล์งานส่ง</h3>
+                    <div class="table-responsive">
+                        <table id="adminFilesTable">
+                            <thead>
+                                <tr>
+                                    <th>วันที่ส่ง</th>
+                                    <th>ครูผู้สอน</th>
+                                    <th>ประเภท</th>
+                                    <th>ไฟล์/ลิงก์</th>
+                                    <th>สถานะ</th>
+                                    <th>การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
