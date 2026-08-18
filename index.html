@@ -33,6 +33,7 @@
                 <li class="nav-item auth-only" onclick="app.showPage('booking')" style="display:none;"><i class="fas fa-calendar-alt"></i> จองวันนิเทศ</li>
                 <li class="nav-item auth-only" onclick="app.showPage('upload')" style="display:none;"><i class="fas fa-folder-open"></i> ส่งงาน</li>
                 <li class="nav-item admin-only" onclick="app.showPage('evaluation')" style="display:none;"><i class="fas fa-star"></i> ประเมินผล</li>
+                <li class="nav-item admin-only" onclick="app.showPage('evalHistory')" style="display:none;"><i class="fas fa-history"></i> ประวัติการนิเทศ</li>
                 <li class="nav-item admin-only" onclick="app.showPage('admin')" style="display:none;"><i class="fas fa-cog"></i> ผู้ดูแลระบบ</li>
             </ul>
             <div class="navbar-user">
@@ -387,6 +388,33 @@
             </div>
         </section>
 
+        <!-- Eval History Page -->
+        <section id="evalHistory" class="page">
+            <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-history"></i> ประวัติการนิเทศย้อนหลัง</h1>
+            </div>
+            <div class="card">
+                <div style="overflow-x: auto;">
+                    <table class="table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: var(--light-bg);">
+                                <th>วันที่สอน</th>
+                                <th>ผู้สอน</th>
+                                <th>ผู้นิเทศ</th>
+                                <th>วิชา</th>
+                                <th>ระดับชั้น</th>
+                                <th>คะแนนรวม</th>
+                                <th>ข้อเสนอแนะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evalHistoryTableBody">
+                            <!-- Data goes here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- Admin Page -->
         <section id="admin" class="page">
             <div class="page-header">
@@ -523,6 +551,6 @@
 
     <!-- Scripts -->
     <script src="js/config.js?v=7"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=2"></script>
 </body>
 </html>

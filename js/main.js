@@ -7,6 +7,7 @@ const app = {
         this.checkAuth();
         this.loadDashboardData();
         this.initEvaluationForm();
+        this.loadEvaluations();
     },
 
     showPage: function(pageId) {
@@ -449,6 +450,36 @@ const app = {
             alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
         });
     },
+    loadEvaluations: function() {
+        fetch(CONFIG.GAS_URL + "?action=getEvaluations")
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    const tbody = document.getElementById('evalHistoryTableBody');
+                    if(tbody) {
+                        tbody.innerHTML = '';
+                        if(res.data.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="7" class="text-center">ไม่มีข้อมูลประวัติการนิเทศ</td></tr>';
+                            return;
+                        }
+                        res.data.forEach(item => {
+                            const dateStr = item['วันที่สอน'] ? new Date(item['วันที่สอน']).toLocaleDateString('th-TH') : '-';
+                            tbody.innerHTML += `<tr>
+                                <td>${dateStr}</td>
+                                <td>${item['ผู้สอน'] || '-'}</td>
+                                <td>${item['ชื่อผู้นิเทศ'] || '-'}</td>
+                                <td>${item['เรื่องที่สอน'] || '-'}</td>
+                                <td>${item['ระดับชั้น'] || '-'}</td>
+                                <td><span class="badge badge-success">${item['คะแนนรวม'] || 0}</span></td>
+                                <td>${item['จุดเด่น'] || '-'}</td>
+                            </tr>`;
+                        });
+                    }
+                }
+            })
+            .catch(err => console.error(err));
+    },
+
     loadAdminBookings: function() {
         document.getElementById('adminBookingsSection').style.display = 'block';
         document.getElementById('adminFilesSection').style.display = 'none';

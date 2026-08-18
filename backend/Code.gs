@@ -113,6 +113,9 @@ function handleRequest(e, method) {
       case 'submitEvaluation':
         result = submitEvaluation(data);
         break;
+      case 'getEvaluations':
+        result = getEvaluations();
+        break;
       case 'updateBookingStatus':
         result = updateBookingStatus(data);
         break;
@@ -394,4 +397,24 @@ function deleteUser(data) {
   const sheet = getOrCreateUsersSheet();
   sheet.deleteRow(data.rowIndex);
   return { status: 'success', message: 'ลบผู้ใช้งานสำเร็จ' };
+}
+
+
+function getEvaluations() {
+  const sheet = getSpreadsheet().getSheetByName('Supervision');
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  const headers = data[0];
+  const results = [];
+  for (let i = 1; i < data.length; i++) {
+    let row = data[i];
+    if (row[0] === '') continue;
+    let obj = {};
+    for (let j = 0; j < headers.length; j++) {
+      obj[headers[j]] = row[j];
+    }
+    results.push(obj);
+  }
+  return results.reverse(); // Newest first
 }
