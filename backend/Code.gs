@@ -337,7 +337,9 @@ function loginUser(data) {
   const sheet = getOrCreateUsersSheet();
   const users = sheet.getDataRange().getValues();
   for(let i = 1; i < users.length; i++) {
-    if(users[i][0] === data.username && users[i][1] === data.password) {
+    let sheetUser = String(users[i][0]).trim();
+    let sheetPass = String(users[i][1]).trim();
+    if(sheetUser === data.username && sheetPass === data.password) {
       return { status: 'success', role: users[i][2], name: users[i][3] };
     }
   }
