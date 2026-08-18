@@ -454,15 +454,17 @@ const app = {
         fetch(CONFIG.GAS_URL + "?action=getEvaluations")
             .then(res => res.json())
             .then(res => {
-                if(res.status === 'success') {
-                    const tbody = document.getElementById('evalHistoryTableBody');
-                    if(tbody) {
-                        tbody.innerHTML = '';
-                        if(!res.data || res.data.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">ไม่มีข้อมูลประวัติการนิเทศ</td></tr>';
-                            return;
-                        }
-                        res.data.forEach(item => {
+                // API อาจส่งคืนเป็น Array ตรงๆ หรือ Object { status: 'success', data: [...] }
+                let dataArray = Array.isArray(res) ? res : (res.data || []);
+                
+                const tbody = document.getElementById('evalHistoryTableBody');
+                if(tbody) {
+                    tbody.innerHTML = '';
+                    if(dataArray.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">ไม่มีข้อมูลประวัติการนิเทศ</td></tr>';
+                        return;
+                    }
+                    dataArray.forEach(item => {
                             // รองรับทั้งหัวตารางแบบเก่า (ภาษาอังกฤษ) และแบบใหม่ (ภาษาไทย)
                             let dateVal = item['วันที่สอน'] || item['Supervision Date'] || item['Timestamp'];
                             let dateStr = '-';
@@ -493,7 +495,6 @@ const app = {
                             </tr>`;
                         });
                     }
-                }
             })
             .catch(err => console.error(err));
     },
