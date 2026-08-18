@@ -39,7 +39,9 @@ function setupSystem() {
   
   // สร้าง Sheet 3: Supervision
   let sheetSupervision = ss.getSheetByName('Supervision') || ss.insertSheet('Supervision');
-  sheetSupervision.appendRow(['Timestamp', 'Teacher Name', 'Supervision Date', 'Strengths', 'Improvements', 'Suggestions', 'Summary']);
+  if (sheetSupervision.getLastRow() === 0) {
+    sheetSupervision.appendRow(['Timestamp', 'ประเภทการนิเทศ', 'ชื่อผู้นิเทศ', 'ผู้สอน', 'กลุ่มสาระ', 'ระดับชั้น', 'คาบที่', 'วันที่สอน', 'เรื่องที่สอน', 'เทคนิคที่ใช้', 'คะแนนรายข้อ', 'คะแนนรวม', 'จุดเด่น', 'จุดควรพัฒนา', 'ข้อเสนอแนะ']);
+  }
   
   // 2. สร้างโฟลเดอร์ใน Google Drive
   let rootFolder = DriveApp.createFolder('Supervision-System-Folder');
@@ -292,17 +294,27 @@ function submitEvaluation(data) {
   const sheet = getSpreadsheet().getSheetByName('Supervision');
   const timestamp = new Date();
   
+  // แปลง scores (array) เป็นข้อความ หรือแยกแต่ละข้อ
+  const scoresStr = data.scores ? data.scores.join(', ') : '';
+  
   sheet.appendRow([
     timestamp,
+    data.supervisionType,
+    data.supervisorName,
     data.teacherName,
-    data.supervisionDate,
+    data.subjectGroup,
+    data.gradeLevel,
+    data.period,
+    data.teachingDate,
+    data.topic,
+    data.teachingTechniques,
+    scoresStr,
+    data.totalScore,
     data.strengths,
     data.improvements,
-    data.suggestions,
-    data.summaryLevel
+    data.suggestions
   ]);
-  
-  return { status: 'success', message: 'บันทึกการประเมินสำเร็จ' };
+  return { status: 'success', message: 'บันทึกผลการประเมินสำเร็จ' };
 }
 
 function updateBookingStatus(data) {

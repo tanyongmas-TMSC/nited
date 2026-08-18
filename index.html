@@ -6,8 +6,15 @@
     <title>ระบบนิเทศออนไลน์ - โรงเรียนตันหยงมัส</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (No Preflight to avoid breaking existing styles) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        corePlugins: { preflight: false }
+      }
+    </script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/theme.css?v=2">
 </head>
 <body>
 
@@ -218,49 +225,164 @@
 
         <!-- Evaluation Page -->
         <section id="evaluation" class="page">
-            <div class="page-header">
-                <h1 class="page-title">⭐ บันทึกผลการนิเทศ (สำหรับผู้บริหาร/ผู้นิเทศ)</h1>
-            </div>
-            <div class="card">
-                <form id="evalForm" onsubmit="app.submitEvaluation(event)">
-                    <div class="grid-2">
-                        <div class="form-group">
-                            <label>ชื่อครูผู้รับการนิเทศ</label>
-                            <input type="text" class="form-control" name="teacherName" required>
-                        </div>
-                        <div class="form-group">
-                            <label>วันที่ทำการนิเทศ</label>
-                            <input type="date" class="form-control" name="supervisionDate" required>
-                        </div>
+            <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden mt-4">
+                
+                <!-- Header -->
+                <div class="bg-blue-700 text-white p-6 md:p-8" style="background-color: var(--secondary-color);">
+                <div class="flex items-center justify-between">
+                    <div>
+                    <h1 class="text-2xl md:text-3xl font-bold mb-2">แบบบันทึกการนิเทศการสอน</h1>
+                    <p class="text-blue-200">โรงเรียนตันหยงมัส (ระบบ e-Inspection)</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>จุดเด่น</label>
-                        <textarea class="form-control" name="strengths" rows="3" required></textarea>
+                    <div class="hidden md:block bg-white p-2 rounded-lg">
+                    <svg class="w-12 h-12 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>จุดที่ควรพัฒนา</label>
-                        <textarea class="form-control" name="improvements" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>ข้อเสนอแนะเพิ่มเติม</label>
-                        <textarea class="form-control" name="suggestions" rows="3"></textarea>
-                    </div>
+                </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>สรุปผลการประเมิน (ระดับคุณภาพ)</label>
-                        <select class="form-control" name="summaryLevel" required>
-                            <option value="">-- เลือกระดับ --</option>
-                            <option value="ดีมาก">ดีมาก</option>
-                            <option value="ดี">ดี</option>
-                            <option value="พอใช้">พอใช้</option>
-                            <option value="ปรับปรุง">ปรับปรุง</option>
+                <form id="evalForm" class="p-6 md:p-8" onsubmit="app.submitEvaluation(event)">
+                
+                <!-- ส่วนที่ 1: ข้อมูลการนิเทศ -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-blue-500 inline-block pb-1">1. ข้อมูลการนิเทศ</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ประเภทการนิเทศ</label>
+                        <div class="flex gap-4 mt-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="supervisionType" value="Schedule" class="w-5 h-5 text-blue-600" required>
+                            <span class="ml-2 text-slate-700">ตามตาราง (Schedule)</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="supervisionType" value="Impromptu" class="w-5 h-5 text-blue-600">
+                            <span class="ml-2 text-slate-700">ไม่ได้นัดหมาย (Impromptu)</span>
+                        </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้นิเทศ</label>
+                        <input type="text" id="supervisorName" name="supervisorName" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="ระบุชื่อผู้นิเทศ">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้รับการนิเทศ (ผู้สอน)</label>
+                        <input type="text" id="evalTeacherName" name="teacherName" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="ระบุชื่อครูผู้สอน">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">กลุ่มสาระการเรียนรู้</label>
+                        <select id="evalSubjectGroup" name="subjectGroup" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                        <option value="">-- เลือกกลุ่มสาระฯ --</option>
+                        <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                        <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                        <option value="ภาษาไทย">ภาษาไทย</option>
+                        <option value="สังคมศึกษาฯ">สังคมศึกษาฯ</option>
+                        <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                        <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                        <option value="ศิลปะ">ศิลปะ</option>
+                        <option value="การงานอาชีพ">การงานอาชีพ</option>
                         </select>
                     </div>
+                    <div class="grid grid-cols-2 gap-4 md:col-span-2">
+                        <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ระดับชั้น / คาบที่</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="evalGradeLevel" name="gradeLevel" class="w-1/2 p-2.5 border border-slate-300 rounded-lg" placeholder="เช่น ม.4/1" required>
+                            <input type="text" id="evalPeriod" name="period" class="w-1/2 p-2.5 border border-slate-300 rounded-lg" placeholder="คาบที่" required>
+                        </div>
+                        </div>
+                        <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">วันที่สอน</label>
+                        <input type="date" id="evalTeachingDate" name="teachingDate" class="w-full p-2.5 border border-slate-300 rounded-lg" required>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">เรื่องที่สอน</label>
+                        <input type="text" id="evalTopic" name="topic" class="w-full p-2.5 border border-slate-300 rounded-lg" placeholder="ระบุเรื่องที่ใช้จัดการเรียนการสอน" required>
+                    </div>
+                    </div>
+                </section>
 
-                    <button type="submit" class="btn btn-success" style="width:100%;"><i class="fas fa-save"></i> บันทึกผลประเมิน</button>
+                <!-- ส่วนที่ 2: เทคนิคการสอน -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-blue-500 inline-block pb-1">2. เทคนิคการสอนที่ใช้ (เลือกได้มากกว่า 1)</h2>
+                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3" id="techniquesContainer">
+                        <!-- Checkboxes will be generated here by JS -->
+                    </div>
+                    <div class="mt-4">
+                        <input type="text" id="otherTechnique" class="w-full p-2 border border-slate-300 rounded-lg" placeholder="เทคนิคอื่นๆ (โปรดระบุ)">
+                    </div>
+                    </div>
+                </section>
+
+                <!-- ส่วนที่ 3: ตารางประเมินผล 25 ข้อ -->
+                <section class="mb-10">
+                    <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-xl font-bold text-slate-800 border-b-2 border-blue-500 inline-block pb-1">3. รายการประเมิน</h2>
+                    <div class="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">
+                        0=ไม่ปฏิบัติ | 1=ควรปรับปรุง | 2=พอใช้ | 3=ดี | 4=ดีมาก
+                    </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left border-collapse min-w-[600px]" style="margin-top:0;">
+                        <thead>
+                        <tr class="bg-slate-800 text-white">
+                            <th class="p-3 w-3/5 font-semibold" style="color:white; background-color:#1e293b;">รายการประเมิน</th>
+                            <th class="p-3 text-center w-16" style="color:white; background-color:#1e293b;">0</th>
+                            <th class="p-3 text-center w-16" style="color:white; background-color:#1e293b;">1</th>
+                            <th class="p-3 text-center w-16" style="color:white; background-color:#1e293b;">2</th>
+                            <th class="p-3 text-center w-16" style="color:white; background-color:#1e293b;">3</th>
+                            <th class="p-3 text-center w-16" style="color:white; background-color:#1e293b;">4</th>
+                        </tr>
+                        </thead>
+                        <tbody id="evaluationBody" class="bg-white divide-y divide-slate-200">
+                        <!-- Rows will be generated here by JS -->
+                        </tbody>
+                    </table>
+                    </div>
+                </section>
+
+                <!-- ส่วนที่ 4: ข้อเสนอแนะเชิงคุณภาพ -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 border-b-2 border-blue-500 inline-block pb-1">4. สรุปผลและข้อเสนอแนะ</h2>
+                    <div class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">จุดเด่น / คำชมเชย</label>
+                        <textarea id="evalStrengths" name="strengths" rows="2" class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">จุดที่ควรพัฒนา</label>
+                        <textarea id="evalImprovements" name="improvements" rows="2" class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ข้อเสนอแนะอื่นๆ</label>
+                        <textarea id="evalSuggestions" name="suggestions" rows="2" class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    </div>
+                </section>
+
+                <!-- สรุปผลคะแนนแบบ Real-time -->
+                <div class="bg-blue-900 text-white p-5 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4" style="background-color: var(--secondary-color);">
+                    <div class="flex items-center gap-6">
+                    <div class="text-center">
+                        <div class="text-sm text-blue-200 font-medium">คะแนนรวม</div>
+                        <div class="text-3xl font-bold"><span id="displayScore">0</span><span class="text-lg text-blue-300">/100</span></div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-sm text-blue-200 font-medium">คิดเป็นร้อยละ</div>
+                        <div class="text-3xl font-bold text-yellow-400"><span id="displayPercent">0.0</span>%</div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="text-sm text-blue-200 font-medium">ระดับคุณภาพ</div>
+                        <div id="displayLevel" class="text-xl font-bold text-emerald-400">-</div>
+                    </div>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn" class="w-full md:w-auto bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-3 px-8 rounded-xl shadow-lg transition duration-200 text-lg flex items-center justify-center border-none cursor-pointer">
+                    <i class="fas fa-save mr-2"></i> บันทึกผลการนิเทศ
+                    </button>
+                </div>
+
                 </form>
             </div>
         </section>

@@ -6,6 +6,7 @@ const app = {
     init: function() {
         this.checkAuth();
         this.loadDashboardData();
+        this.initEvaluationForm();
     },
 
     showPage: function(pageId) {
@@ -223,7 +224,6 @@ const app = {
             alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
         });
     },
-
     toggleUploadInput: function() {
         const type = document.getElementById('fileTypeSelect').value;
         if(type === 'คลิปวิดีโอ') {
@@ -232,6 +232,157 @@ const app = {
         } else {
             document.getElementById('fileInputContainer').style.display = 'block';
             document.getElementById('linkInputContainer').style.display = 'none';
+        }
+    },
+
+    initEvaluationForm: function() {
+        // Render 25-question evaluation form
+        this.renderEvaluationForm();
+
+        // Add event listener for calculating score
+        document.getElementById('evalForm').addEventListener('change', (e) => {
+            if(e.target.name && e.target.name.startsWith('q')) {
+                this.calculateEvalScore();
+            }
+        });
+    },
+
+    renderEvaluationForm: function() {
+        // 1. กำหนดเทคนิคการสอน
+        const teachingTechniques = [
+            "กระบวนการสืบค้น", "การเรียนแบบค้นพบ", "การเรียนแบบแก้ปัญหา",
+            "การเรียนแบบสร้างแผนผัง", "การตั้งคำถาม", "เทคนิคคู่คิด",
+            "การศึกษาเป็นรายบุคคล", "การฝึกปฏิบัติ/ทดลอง", "เกม",
+            "การอภิปราย", "กิจกรรมกลุ่ม", "บูรณาการกลุ่มสาระอื่น"
+        ];
+        const techContainer = document.getElementById('techniquesContainer');
+        if(techContainer) {
+            techContainer.innerHTML = '';
+            teachingTechniques.forEach(tech => {
+                techContainer.innerHTML += `
+                <label class="flex items-center cursor-pointer hover:bg-blue-100 p-2 rounded-lg transition">
+                    <input type="checkbox" name="techniques" value="${tech}" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                    <span class="ml-2 text-sm text-slate-700">${tech}</span>
+                </label>
+                `;
+            });
+        }
+
+        // 2. กำหนดรายการประเมิน 25 ข้อ จัดกลุ่มตามด้าน
+        const criteria = [
+            { category: "ด้านการเตรียมการสอน", items: ["1. จัดทำแผนการเรียนรู้ครบองค์ประกอบ", "2. จัดเตรียมวัสดุ-อุปกรณ์ สื่อ นวัตกรรม กิจกรรมตามแผนฯ"] },
+            { category: "ด้านการจัดกิจกรรมการเรียนรู้", items: ["3. มีวิธีการนำเข้าสู่บทเรียนที่น่าสนใจ แจ้งวัตถุประสงค์การเรียนรู้", "4. ใช้เทคนิคการสอนที่หลากหลาย เน้นผู้เรียนเป็นสำคัญ", "5. จัดกิจกรรมที่ส่งเสริมให้ค้นคว้าหาคำตอบด้วยตนเอง", "6. จัดกิจกรรมที่ตอบสนองความแตกต่างระหว่างบุคคล", "7. จัดกิจกรรมที่เน้นกระบวนการคิด (วิเคราะห์ สังเคราะห์ สร้างสรรค์)", "8. จัดกิจกรรมให้ผู้เรียนมีส่วนร่วมและแสดงความคิดเห็นเสรี", "9. มีการสอดแทรกคุณธรรม จริยธรรมและคุณลักษณะอันพึงประสงค์", "10. มีการเสริมแรงเมื่อนักเรียนปฏิบัติหรือตอบถูกต้อง", "11. มีการสรุปประเด็น สาระ เนื้อหาในกิจกรรมการเรียนรู้", "12. มอบหมายงานเหมาะสมตามศักยภาพผู้เรียนและเอาใจใส่ดูแล", "13. ใช้เวลาสอนเหมาะสมกับเวลาที่กำหนด"] },
+            { category: "ด้านสื่อ นวัตกรรม แหล่งเรียนรู้", items: ["14. ใช้สื่อที่เหมาะสมกับกิจกรรมและศักยภาพของผู้เรียน", "15. ใช้สื่อ แหล่งการเรียนรู้อย่างหลากหลาย"] },
+            { category: "ด้านการวัดและประเมินผล", items: ["16. สอดคล้องและครอบคลุมจุดประสงค์", "17. ประเมินผลอย่างหลากหลายและครบทั้ง 3 ด้าน (K.P.A.)"] },
+            { category: "ด้านสภาพทั่วไป", items: ["18. การตรงต่อเวลา", "19. การควบคุมความเป็นระเบียบในชั้นเรียน", "20. การจัดบรรยากาศในชั้นเรียน (การจัดห้อง, ความสะอาด)"] },
+            { category: "ด้านบุคลิกภาพ", items: ["21. แต่งกายสุภาพ สะอาดเรียบร้อย เหมาะสมกับกาลเทศะ", "22. ใช้ถ้อยคำสุภาพ ถูกต้อง ระดับเสียงดังชัดเจน", "23. ยิ้มแย้มแจ่มใส และควบคุมอารมณ์ในระหว่างสอนได้ดี", "24. เคลื่อนไหวและแสดงท่าทางในการสอนอย่างมีจุดหมาย", "25. แสดงความรัก ความเมตตา กรุณา เอื้ออาทรต่อศิษย์"] }
+        ];
+
+        const evalBody = document.getElementById('evaluationBody');
+        if(evalBody) {
+            evalBody.innerHTML = '';
+            let questionIndex = 1;
+            criteria.forEach(group => {
+                evalBody.innerHTML += `<tr class="bg-slate-100"><td colspan="6" class="p-3 font-bold text-blue-800">${group.category}</td></tr>`;
+                group.items.forEach(itemText => {
+                    let radioCells = '';
+                    for (let score = 0; score <= 4; score++) {
+                        radioCells += `<td class="p-2 text-center border-l border-slate-100 hover:bg-blue-50 transition"><input type="radio" name="q${questionIndex}" value="${score}" required class="w-5 h-5 text-blue-600 cursor-pointer"></td>`;
+                    }
+                    evalBody.innerHTML += `<tr class="hover:bg-slate-50 group"><td class="p-3 text-sm text-slate-700">${itemText}</td>${radioCells}</tr>`;
+                    questionIndex++;
+                });
+            });
+        }
+    },
+
+    submitEvaluation: function(e) {
+        e.preventDefault();
+        this.showLoader('กำลังบันทึกผลประเมิน...');
+        
+        const form = e.target;
+        
+        // รวบรวมเทคนิคการสอนที่ติ๊กเลือก
+        const selectedTechs = Array.from(document.querySelectorAll('input[name="techniques"]:checked')).map(cb => cb.value);
+        const otherTech = document.getElementById('otherTechnique') ? document.getElementById('otherTechnique').value : '';
+        if (otherTech) selectedTechs.push(otherTech);
+
+        // รวบรวมคะแนน 25 ข้อ
+        const scoresArray = [];
+        for (let i = 1; i <= 25; i++) {
+            const el = document.querySelector(`input[name="q${i}"]:checked`);
+            if (el) scoresArray.push(parseInt(el.value));
+            else scoresArray.push(0);
+        }
+
+        const data = {
+            action: 'submitEvaluation',
+            supervisionType: form.querySelector('input[name="supervisionType"]:checked') ? form.querySelector('input[name="supervisionType"]:checked').value : '',
+            supervisorName: document.getElementById('supervisorName') ? document.getElementById('supervisorName').value : '',
+            teacherName: document.getElementById('evalTeacherName') ? document.getElementById('evalTeacherName').value : '',
+            subjectGroup: document.getElementById('evalSubjectGroup') ? document.getElementById('evalSubjectGroup').value : '',
+            gradeLevel: document.getElementById('evalGradeLevel') ? document.getElementById('evalGradeLevel').value : '',
+            period: document.getElementById('evalPeriod') ? document.getElementById('evalPeriod').value : '',
+            teachingDate: document.getElementById('evalTeachingDate') ? document.getElementById('evalTeachingDate').value : '',
+            topic: document.getElementById('evalTopic') ? document.getElementById('evalTopic').value : '',
+            teachingTechniques: selectedTechs.join(', '),
+            scores: scoresArray,
+            totalScore: document.getElementById('displayScore') ? parseInt(document.getElementById('displayScore').innerText) : 0,
+            strengths: document.getElementById('evalStrengths') ? document.getElementById('evalStrengths').value : '',
+            improvements: document.getElementById('evalImprovements') ? document.getElementById('evalImprovements').value : '',
+            suggestions: document.getElementById('evalSuggestions') ? document.getElementById('evalSuggestions').value : ''
+        };
+
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            this.hideLoader();
+            if(res.status === 'success') {
+                alert('บันทึกผลประเมินสำเร็จ!');
+                form.reset();
+                this.calculateEvalScore(); // Reset score display
+            } else {
+                alert('เกิดข้อผิดพลาด: ' + res.message);
+            }
+        })
+        .catch(err => { this.hideLoader(); alert('เชื่อมต่อผิดพลาด'); });
+    },
+
+    calculateEvalScore: function() {
+        let total = 0;
+        let answeredCount = 0;
+        for (let i = 1; i <= 25; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected) {
+                total += parseInt(selected.value);
+                answeredCount++;
+            }
+        }
+        const percent = total; // 25 questions * 4 max = 100 max
+        let level = "-";
+        if (answeredCount > 0) {
+            if (percent < 60) level = "ต้องปรับปรุง";
+            else if (percent < 70) level = "ยอมรับได้ (ควรปรับปรุง)";
+            else if (percent < 80) level = "ค่อนข้างดี";
+            else if (percent < 90) level = "ดี";
+            else level = "ดีมาก เป็นตัวอย่างที่ดี";
+        }
+        const displayScore = document.getElementById('displayScore');
+        const displayPercent = document.getElementById('displayPercent');
+        const levelEl = document.getElementById('displayLevel');
+        
+        if(displayScore) displayScore.innerText = total;
+        if(displayPercent) displayPercent.innerText = percent.toFixed(1);
+        
+        if(levelEl) {
+            levelEl.innerText = level;
+            if (percent < 60) levelEl.className = "text-xl font-bold text-red-400";
+            else if (percent < 70) levelEl.className = "text-xl font-bold text-orange-400";
+            else if (percent < 80) levelEl.className = "text-xl font-bold text-yellow-300";
+            else levelEl.className = "text-xl font-bold text-emerald-400";
         }
     },
 
@@ -298,33 +449,6 @@ const app = {
             alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
         });
     },
-
-    submitEvaluation: function(e) {
-        e.preventDefault();
-        this.showLoader('กำลังบันทึกผลการประเมิน...');
-        
-        const form = e.target;
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        data.action = 'submitEvaluation';
-
-        fetch(CONFIG.GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(res => {
-            this.hideLoader();
-            if(res.status === 'success') {
-                alert('บันทึกผลการประเมินสำเร็จ!');
-                form.reset();
-            } else {
-                alert('เกิดข้อผิดพลาด: ' + res.message);
-            }
-        })
-        .catch(err => { this.hideLoader(); alert('เกิดข้อผิดพลาดในการเชื่อมต่อ'); });
-    },
-
     loadAdminBookings: function() {
         document.getElementById('adminBookingsSection').style.display = 'block';
         document.getElementById('adminFilesSection').style.display = 'none';
