@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบนิเทศออนไลน์ - โรงเรียนนราศึกษา</title>
+    <title>ระบบนิเทศออนไลน์ - โรงเรียนตันหยงมัส</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
@@ -11,29 +11,32 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-school fa-3x"></i>
-            <h2>ระบบนิเทศภายใน<br><small>โรงเรียนตันหยงมัส</small></h2>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="#" class="navbar-brand" onclick="app.showPage('dashboard')">
+                <div class="logo">🏫</div>
+                <div>
+                    <div class="brand-text">ระบบนิเทศภายใน</div>
+                    <div class="brand-sub">โรงเรียนตันหยงมัส</div>
+                </div>
+            </a>
+            <ul class="navbar-nav">
+                <li class="nav-item active" onclick="app.showPage('dashboard')"><i class="fas fa-home"></i> หน้าแรก</li>
+                <li class="nav-item auth-only" onclick="app.showPage('booking')" style="display:none;"><i class="fas fa-calendar-alt"></i> จองวันนิเทศ</li>
+                <li class="nav-item auth-only" onclick="app.showPage('upload')" style="display:none;"><i class="fas fa-folder-open"></i> ส่งงาน</li>
+                <li class="nav-item admin-only" onclick="app.showPage('evaluation')" style="display:none;"><i class="fas fa-star"></i> ประเมินผล</li>
+                <li class="nav-item admin-only" onclick="app.showPage('admin')" style="display:none;"><i class="fas fa-cog"></i> ผู้ดูแลระบบ</li>
+            </ul>
+            <div class="navbar-user">
+                <div id="userInfoDiv" style="display:none;">
+                    <div class="user-name" id="userName">User</div>
+                    <div style="font-size:11px;opacity:0.7;" id="userRole">Role</div>
+                </div>
+                <button class="btn btn-primary" id="btnLoginNav" onclick="app.openLoginModal()"><i class="fas fa-lock"></i> เข้าสู่ระบบ</button>
+                <button class="btn btn-danger" id="btnLogoutNav" style="display:none;" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
+            </div>
         </div>
-        <ul class="nav-menu">
-            <li class="nav-item active" onclick="app.showPage('dashboard')">
-                <i class="fas fa-home"></i> หน้าแรก (Dashboard)
-            </li>
-            <li class="nav-item" onclick="app.showPage('booking')">
-                <i class="fas fa-calendar-alt"></i> จองวันนิเทศ
-            </li>
-            <li class="nav-item" onclick="app.showPage('upload')">
-                <i class="fas fa-file-upload"></i> ส่งไฟล์งาน
-            </li>
-            <li class="nav-item" onclick="app.showPage('evaluation')">
-                <i class="fas fa-clipboard-check"></i> ประเมินผลนิเทศ
-            </li>
-            <li class="nav-item" onclick="app.showPage('admin')">
-                <i class="fas fa-user-shield"></i> ผู้ดูแลระบบ
-            </li>
-        </ul>
     </nav>
 
     <!-- Main Content -->
@@ -42,35 +45,50 @@
         <!-- Dashboard Page -->
         <section id="dashboard" class="page active">
             <div class="page-header">
-                <h1 class="page-title">ภาพรวมระบบ (Dashboard)</h1>
+                <h1 class="page-title">📊 รายงานสถิติการนิเทศภายใน</h1>
+                <p style="color:#666; margin-top:5px;">ภาพรวมระบบบริหารจัดการการนิเทศภายในโรงเรียนตันหยงมัส</p>
             </div>
             
-            <div class="stats-grid">
+            <div class="stats-grid-5">
                 <div class="stat-card">
-                    <i class="fas fa-calendar-check stat-icon"></i>
+                    <div class="stat-icon blue">📅</div>
                     <div class="stat-details">
-                        <h3>การจองทั้งหมด</h3>
-                        <p id="statTotalBookings">0</p>
+                        <h3 id="statTotalBookings">0</h3>
+                        <p>การจองทั้งหมด</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-user-check stat-icon"></i>
+                    <div class="stat-icon green">✅</div>
                     <div class="stat-details">
-                        <h3>นิเทศเสร็จสิ้น</h3>
-                        <p id="statSupervised">0</p>
+                        <h3 id="statSupervised">0</h3>
+                        <p>นิเทศแล้ว</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <i class="fas fa-file-signature stat-icon"></i>
+                    <div class="stat-icon orange">📂</div>
                     <div class="stat-details">
-                        <h3>งานรอตรวจ</h3>
-                        <p id="statPendingFiles">0</p>
+                        <h3 id="statTotalFiles">0</h3>
+                        <p>ไฟล์งานทั้งหมด</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">⭐</div>
+                    <div class="stat-details">
+                        <h3 id="statEvaluations">0</h3>
+                        <p>ผลประเมินทั้งหมด</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">📄</div>
+                    <div class="stat-details">
+                        <h3 id="statPendingFiles">0</h3>
+                        <p>รอดำเนินการ</p>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h3><i class="fas fa-list"></i> รายการจองล่าสุด</h3>
+                <h3 style="margin-bottom:15px; color:#005b9f;"><i class="fas fa-list"></i> รายการจองล่าสุด</h3>
                 <div class="table-responsive">
                     <table id="recentBookingsTable">
                         <thead>
@@ -94,15 +112,15 @@
         <!-- Booking Page -->
         <section id="booking" class="page">
             <div class="page-header">
-                <h1 class="page-title">แบบฟอร์มจองวันนิเทศ</h1>
+                <h1 class="page-title">📅 แบบฟอร์มจองวันนิเทศ</h1>
             </div>
             
             <div class="card">
                 <form id="bookingForm" onsubmit="app.submitBooking(event)">
-                    <div class="stats-grid">
+                    <div class="grid-2">
                         <div class="form-group">
                             <label>ชื่อ-นามสกุล ครูผู้สอน</label>
-                            <input type="text" class="form-control" name="teacherName" required>
+                            <input type="text" class="form-control" name="teacherName" id="bookingTeacherName" required>
                         </div>
                         <div class="form-group">
                             <label>กลุ่มสาระการเรียนรู้</label>
@@ -120,7 +138,7 @@
                         </div>
                     </div>
                     
-                    <div class="stats-grid">
+                    <div class="grid-2">
                         <div class="form-group">
                             <label>วันที่ต้องการรับการนิเทศ</label>
                             <input type="date" class="form-control" name="date" required>
@@ -131,7 +149,7 @@
                         </div>
                     </div>
 
-                    <div class="stats-grid">
+                    <div class="grid-2">
                         <div class="form-group">
                             <label>ชื่อวิชา</label>
                             <input type="text" class="form-control" name="subjectName" required>
@@ -142,7 +160,7 @@
                         </div>
                     </div>
 
-                    <div class="stats-grid">
+                    <div class="grid-2">
                         <div class="form-group">
                             <label>ระดับชั้น</label>
                             <input type="text" class="form-control" name="classLevel" placeholder="เช่น ม.4/1" required>
@@ -153,7 +171,7 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> ยืนยันการจอง</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%;"><i class="fas fa-paper-plane"></i> ยืนยันการจอง</button>
                 </form>
             </div>
         </section>
@@ -161,14 +179,14 @@
         <!-- Upload Page -->
         <section id="upload" class="page">
             <div class="page-header">
-                <h1 class="page-title">ส่งไฟล์ผลงาน / สื่อการสอน</h1>
+                <h1 class="page-title">📂 ส่งไฟล์ผลงาน / สื่อการสอน</h1>
             </div>
             
-            <div class="card">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
                 <form id="uploadForm" onsubmit="app.submitUpload(event)">
                     <div class="form-group">
                         <label>ชื่อครูผู้สอน</label>
-                        <input type="text" class="form-control" name="upTeacherName" required>
+                        <input type="text" class="form-control" name="upTeacherName" id="uploadTeacherName" required>
                     </div>
                     
                     <div class="form-group">
@@ -184,7 +202,7 @@
 
                     <div class="form-group" id="fileInputContainer">
                         <label>เลือกไฟล์จากเครื่อง</label>
-                        <input type="file" class="form-control" id="fileInput" name="file">
+                        <input type="file" class="form-control" id="fileInput" name="file" style="padding: 10px;">
                         <small style="color:#666;">ขนาดไฟล์ไม่เกิน 10MB</small>
                     </div>
 
@@ -193,7 +211,7 @@
                         <input type="url" class="form-control" id="linkInput" name="linkInput" placeholder="https://...">
                     </div>
                     
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> ส่งผลงาน</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%;"><i class="fas fa-upload"></i> ส่งผลงาน</button>
                 </form>
             </div>
         </section>
@@ -201,11 +219,11 @@
         <!-- Evaluation Page -->
         <section id="evaluation" class="page">
             <div class="page-header">
-                <h1 class="page-title">บันทึกผลการนิเทศ (สำหรับผู้บริหาร/ผู้นิเทศ)</h1>
+                <h1 class="page-title">⭐ บันทึกผลการนิเทศ (สำหรับผู้บริหาร/ผู้นิเทศ)</h1>
             </div>
             <div class="card">
                 <form id="evalForm" onsubmit="app.submitEvaluation(event)">
-                    <div class="stats-grid">
+                    <div class="grid-2">
                         <div class="form-group">
                             <label>ชื่อครูผู้รับการนิเทศ</label>
                             <input type="text" class="form-control" name="teacherName" required>
@@ -242,7 +260,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> บันทึกผลประเมิน</button>
+                    <button type="submit" class="btn btn-success" style="width:100%;"><i class="fas fa-save"></i> บันทึกผลประเมิน</button>
                 </form>
             </div>
         </section>
@@ -250,30 +268,17 @@
         <!-- Admin Page -->
         <section id="admin" class="page">
             <div class="page-header">
-                <h1 class="page-title">ระบบจัดการ (Admin)</h1>
+                <h1 class="page-title">⚙️ ระบบจัดการ (Admin)</h1>
             </div>
             
-            <!-- Login -->
-            <div class="card" id="adminLogin">
-                <h3 style="margin-bottom:15px; color:var(--primary-color);"><i class="fas fa-lock"></i> เข้าสู่ระบบผู้ดูแล</h3>
-                <div class="form-group">
-                    <label>รหัสผ่าน</label>
-                    <input type="password" class="form-control" id="adminPass" placeholder="ใส่รหัสผ่าน admin1234">
-                </div>
-                <button class="btn btn-primary" onclick="app.loginAdmin()">เข้าสู่ระบบ</button>
-            </div>
-
-            <!-- Dashboard Admin -->
-            <div id="adminPanel" style="display:none;">
-                <!-- แท็บเมนูใน Admin -->
+            <div id="adminPanel">
                 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn btn-primary" onclick="app.loadAdminBookings()"><i class="fas fa-calendar-alt"></i> คำขอจองวันนิเทศ</button>
                     <button class="btn btn-primary" style="background-color:#17a2b8;" onclick="app.loadAdminFiles()"><i class="fas fa-folder-open"></i> ตรวจสอบไฟล์งาน</button>
                 </div>
 
-                <!-- ตารางจัดการการจอง -->
                 <div class="card" id="adminBookingsSection">
-                    <h3><i class="fas fa-tasks"></i> จัดการคำขอจองนิเทศ</h3>
+                    <h3 style="margin-bottom:15px; color:#005b9f;"><i class="fas fa-tasks"></i> จัดการคำขอจองนิเทศ</h3>
                     <div class="table-responsive">
                         <table id="adminBookingsTable">
                             <thead>
@@ -291,9 +296,8 @@
                     </div>
                 </div>
 
-                <!-- ตารางตรวจไฟล์ -->
                 <div class="card" id="adminFilesSection" style="display:none;">
-                    <h3><i class="fas fa-file-alt"></i> ตรวจสอบไฟล์งานส่ง</h3>
+                    <h3 style="margin-bottom:15px; color:#005b9f;"><i class="fas fa-file-alt"></i> ตรวจสอบไฟล์งานส่ง</h3>
                     <div class="table-responsive">
                         <table id="adminFilesTable">
                             <thead>
@@ -315,6 +319,32 @@
 
     </main>
 
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="app.closeLoginModal()">&times;</span>
+            <div style="text-align:center; margin-bottom: 20px;">
+                <div style="font-size: 40px;">🏫</div>
+                <h2 style="color:var(--primary-color);">เข้าสู่ระบบ</h2>
+                <p style="color:#666; font-size:14px;">กรุณากรอกชื่อผู้ใช้และรหัสผ่าน</p>
+            </div>
+            <div class="form-group">
+                <label>ชื่อผู้ใช้งาน (หรือ ชื่อครู)</label>
+                <input type="text" class="form-control" id="loginUsername" placeholder="เช่น somchai">
+            </div>
+            <div class="form-group">
+                <label>รหัสผ่าน</label>
+                <input type="password" class="form-control" id="loginPassword" placeholder="รหัสผ่าน">
+            </div>
+            <div style="font-size:12px; color:#888; margin-bottom: 15px; background: #f8f9fa; padding:10px; border-radius:5px;">
+                <strong>💡 คำแนะนำระบบล็อกอิน:</strong><br>
+                • <b>ครูทั่วไป:</b> กรอกชื่อตัวเอง และรหัสผ่าน `teacher`<br>
+                • <b>ผู้ดูแล/ผู้บริหาร:</b> กรอกชื่อ `admin` และรหัสผ่าน `admin1234`
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="app.processLogin()">เข้าสู่ระบบ</button>
+        </div>
+    </div>
+
     <!-- Global Loader -->
     <div class="loader-overlay" id="loader">
         <div class="loader"></div>
@@ -322,7 +352,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/config.js?v=2"></script>
-    <script src="js/app.js?v=2"></script>
+    <script src="js/config.js?v=3"></script>
+    <script src="js/app.js?v=3"></script>
 </body>
 </html>

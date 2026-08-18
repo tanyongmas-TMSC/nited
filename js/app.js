@@ -1,21 +1,30 @@
 const app = {
     
+    currentUser: null,
+    currentRole: null,
+
     init: function() {
+        this.checkAuth();
         this.loadDashboardData();
     },
 
     showPage: function(pageId) {
         // อัปเดตเมนู
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+        if(event && event.currentTarget.classList.contains('nav-item')) {
+            event.currentTarget.classList.add('active');
+        }
 
         // สลับหน้าจอ
         document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
+        const page = document.getElementById(pageId);
+        if(page) page.classList.add('active');
 
         // โหลดข้อมูลตามหน้า
         if(pageId === 'dashboard') {
             this.loadDashboardData();
+        } else if(pageId === 'admin') {
+            this.loadAdminBookings();
         }
     },
 
@@ -26,6 +35,86 @@ const app = {
 
     hideLoader: function() {
         document.getElementById('loader').style.display = 'none';
+    },
+
+    // -----------------------------------------
+    // AUTHENTICATION (MOCK)
+    // -----------------------------------------
+    checkAuth: function() {
+        const storedUser = localStorage.getItem('nited_user');
+        const storedRole = localStorage.getItem('nited_role');
+        if(storedUser && storedRole) {
+            this.setAuthUI(storedUser, storedRole);
+        }
+    },
+
+    openLoginModal: function() {
+        document.getElementById('loginModal').style.display = 'block';
+    },
+
+    closeLoginModal: function() {
+        document.getElementById('loginModal').style.display = 'none';
+    },
+
+    processLogin: function() {
+        const user = document.getElementById('loginUsername').value.trim();
+        const pass = document.getElementById('loginPassword').value.trim();
+
+        if(user === 'admin' && pass === 'admin1234') {
+            this.setAuthUI('ผู้ดูแลระบบ', 'admin');
+        } else if(user && pass === 'teacher') {
+            this.setAuthUI(user, 'teacher');
+        } else {
+            alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            return;
+        }
+
+        // Save to localStorage
+        localStorage.setItem('nited_user', this.currentUser);
+        localStorage.setItem('nited_role', this.currentRole);
+
+        this.closeLoginModal();
+        alert('เข้าสู่ระบบสำเร็จ');
+    },
+
+    logout: function() {
+        localStorage.removeItem('nited_user');
+        localStorage.removeItem('nited_role');
+        this.currentUser = null;
+        this.currentRole = null;
+
+        // Reset UI
+        document.querySelectorAll('.auth-only, .admin-only').forEach(el => el.style.display = 'none');
+        document.getElementById('btnLoginNav').style.display = 'block';
+        document.getElementById('btnLogoutNav').style.display = 'none';
+        document.getElementById('userInfoDiv').style.display = 'none';
+
+        this.showPage('dashboard');
+    },
+
+    setAuthUI: function(username, role) {
+        this.currentUser = username;
+        this.currentRole = role;
+
+        // Show/Hide Nav items
+        document.querySelectorAll('.auth-only').forEach(el => el.style.display = 'flex');
+        
+        if(role === 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+        }
+
+        // Pre-fill forms
+        const bookingTeacher = document.getElementById('bookingTeacherName');
+        const uploadTeacher = document.getElementById('uploadTeacherName');
+        if(bookingTeacher && role !== 'admin') bookingTeacher.value = username;
+        if(uploadTeacher && role !== 'admin') uploadTeacher.value = username;
+
+        // Update Navbar User Section
+        document.getElementById('btnLoginNav').style.display = 'none';
+        document.getElementById('btnLogoutNav').style.display = 'block';
+        document.getElementById('userInfoDiv').style.display = 'block';
+        document.getElementById('userName').innerText = username;
+        document.getElementById('userRole').innerText = role === 'admin' ? 'ผู้ดูแลระบบ' : 'ครูผู้สอน';
     },
 
     // -----------------------------------------
@@ -42,6 +131,10 @@ const app = {
                     document.getElementById('statTotalBookings').innerText = res.data.totalBookings;
                     document.getElementById('statSupervised').innerText = res.data.supervisedCount;
                     document.getElementById('statPendingFiles').innerText = res.data.pendingFiles;
+                    
+                    // Added total files & evaluations for mock 5-grid layout
+                    document.getElementById('statTotalFiles').innerText = res.data.pendingFiles * 2; // Mock
+                    document.getElementById('statEvaluations').innerText = res.data.supervisedCount; // Mock
                 }
                 return fetch(CONFIG.GAS_URL + "?action=getBookings");
             })
@@ -62,7 +155,6 @@ const app = {
         const tbody = document.querySelector('#recentBookingsTable tbody');
         tbody.innerHTML = '';
         
-        // เอา 5 รายการล่าสุด
         const recent = bookings.slice(-5).reverse();
         
         if(recent.length === 0) {
@@ -97,7 +189,6 @@ const app = {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         data.action = 'createBooking';
-        // Format time is missing in form, just mock it or add field later. 
         data.time = data.period; 
 
         fetch(CONFIG.GAS_URL, {
@@ -111,7 +202,6 @@ const app = {
                 alert('บันทึกการจองสำเร็จ!');
                 form.reset();
                 this.showPage('dashboard');
-                // trigger nav update visually
                 document.querySelectorAll('.nav-item')[0].click();
             } else {
                 alert('เกิดข้อผิดพลาด: ' + res.message);
@@ -196,17 +286,6 @@ const app = {
             this.hideLoader();
             alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
         });
-    },
-
-    loginAdmin: function() {
-        const pass = document.getElementById('adminPass').value;
-        if(pass === 'admin1234') {
-            document.getElementById('adminLogin').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-            this.loadAdminBookings();
-        } else {
-            alert('รหัสผ่านไม่ถูกต้อง');
-        }
     },
 
     submitEvaluation: function(e) {
