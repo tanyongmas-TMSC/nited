@@ -60,21 +60,33 @@ const app = {
         const user = document.getElementById('loginUsername').value.trim();
         const pass = document.getElementById('loginPassword').value.trim();
 
-        if(user === 'admin' && pass === 'admin1234') {
-            this.setAuthUI('ผู้ดูแลระบบ', 'admin');
-        } else if(user && pass === 'teacher') {
-            this.setAuthUI(user, 'teacher');
-        } else {
-            alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        if(!user || !pass) {
+            alert('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
             return;
         }
 
-        // Save to localStorage
-        localStorage.setItem('nited_user', this.currentUser);
-        localStorage.setItem('nited_role', this.currentRole);
-
-        this.closeLoginModal();
-        alert('เข้าสู่ระบบสำเร็จ');
+        this.showLoader('กำลังตรวจสอบสิทธิ์...');
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'login', username: user, password: pass })
+        })
+        .then(res => res.json())
+        .then(res => {
+            this.hideLoader();
+            if(res.status === 'success') {
+                this.setAuthUI(res.name || user, res.role);
+                localStorage.setItem('nited_user', this.currentUser);
+                localStorage.setItem('nited_role', this.currentRole);
+                this.closeLoginModal();
+                alert('เข้าสู่ระบบสำเร็จ');
+            } else {
+                alert('ข้อผิดพลาด: ' + res.message);
+            }
+        })
+        .catch(err => {
+            this.hideLoader();
+            alert('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
+        });
     },
 
     logout: function() {
@@ -132,9 +144,8 @@ const app = {
                     document.getElementById('statSupervised').innerText = res.data.supervisedCount;
                     document.getElementById('statPendingFiles').innerText = res.data.pendingFiles;
                     
-                    // Added total files & evaluations for mock 5-grid layout
-                    document.getElementById('statTotalFiles').innerText = res.data.pendingFiles * 2; // Mock
-                    document.getElementById('statEvaluations').innerText = res.data.supervisedCount; // Mock
+                    document.getElementById('statTotalFiles').innerText = res.data.pendingFiles * 2; 
+                    document.getElementById('statEvaluations').innerText = res.data.supervisedCount; 
                 }
                 return fetch(CONFIG.GAS_URL + "?action=getBookings");
             })
@@ -317,6 +328,7 @@ const app = {
     loadAdminBookings: function() {
         document.getElementById('adminBookingsSection').style.display = 'block';
         document.getElementById('adminFilesSection').style.display = 'none';
+        document.getElementById('adminUsersSection').style.display = 'none';
         this.showLoader('กำลังโหลดคำขอจอง...');
 
         fetch(CONFIG.GAS_URL + "?action=getBookings")
@@ -377,6 +389,7 @@ const app = {
     loadAdminFiles: function() {
         document.getElementById('adminBookingsSection').style.display = 'none';
         document.getElementById('adminFilesSection').style.display = 'block';
+        document.getElementById('adminUsersSection').style.display = 'none';
         this.showLoader('กำลังโหลดข้อมูลไฟล์งาน...');
 
         fetch(CONFIG.GAS_URL + "?action=getFiles")
@@ -432,6 +445,88 @@ const app = {
         .then(res => res.json())
         .then(res => {
             if(res.status === 'success') this.loadAdminFiles();
+            else { this.hideLoader(); alert('เกิดข้อผิดพลาด'); }
+        });
+    },
+
+    loadAdminUsers: function() {
+        document.getElementById('adminBookingsSection').style.display = 'none';
+        document.getElementById('adminFilesSection').style.display = 'none';
+        document.getElementById('adminUsersSection').style.display = 'block';
+        this.showLoader('กำลังโหลดรายชื่อผู้ใช้...');
+
+        fetch(CONFIG.GAS_URL + "?action=getUsers")
+            .then(res => res.json())
+            .then(res => {
+                this.hideLoader();
+                if(res.status === 'success') this.renderAdminUsers(res.data);
+            })
+            .catch(err => { this.hideLoader(); alert('โหลดข้อมูลล้มเหลว'); });
+    },
+
+    renderAdminUsers: function(users) {
+        const tbody = document.querySelector('#adminUsersTable tbody');
+        tbody.innerHTML = '';
+        if(users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่มีข้อมูลผู้ใช้</td></tr>';
+            return;
+        }
+
+        users.forEach(u => {
+            let roleBadge = u.role === 'admin' ? '<span class="badge badge-success">Admin</span>' : '<span class="badge badge-pending">Teacher</span>';
+            let btnDelete = `<button class="btn btn-danger" style="padding:5px 10px; font-size:12px; background:#dc3545;" onclick="app.deleteUser(${u.rowIndex}, '${u.username}')">ลบผู้ใช้</button>`;
+            
+            // ป้องกันไม่ให้ลบตัวเอง
+            if(u.username === this.currentUser) btnDelete = `<button class="btn" style="padding:5px 10px; font-size:12px; background:#ccc;" disabled>ตัวเอง</button>`;
+
+            let tr = `<tr>
+                <td>${u.username}</td>
+                <td>${u.password}</td>
+                <td>${u.name}</td>
+                <td>${roleBadge}</td>
+                <td>${btnDelete}</td>
+            </tr>`;
+            tbody.innerHTML += tr;
+        });
+    },
+
+    submitNewUser: function(e) {
+        e.preventDefault();
+        this.showLoader('กำลังบันทึกผู้ใช้ใหม่...');
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        data.action = 'addUser';
+
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.status === 'success') {
+                form.reset();
+                this.loadAdminUsers();
+            } else {
+                this.hideLoader();
+                alert('เกิดข้อผิดพลาด: ' + res.message);
+            }
+        })
+        .catch(err => { this.hideLoader(); alert('เกิดข้อผิดพลาดในการเชื่อมต่อ'); });
+    },
+
+    deleteUser: function(rowIndex, username) {
+        if(!confirm(`ยืนยันที่จะลบผู้ใช้งาน "${username}" ใช่หรือไม่?`)) return;
+        this.showLoader('กำลังลบข้อมูล...');
+        
+        fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deleteUser', rowIndex: rowIndex })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(res.status === 'success') this.loadAdminUsers();
             else { this.hideLoader(); alert('เกิดข้อผิดพลาด'); }
         });
     }

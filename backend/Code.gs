@@ -107,6 +107,18 @@ function handleRequest(e, method) {
       case 'updateFileStatus':
         result = updateFileStatus(data);
         break;
+      case 'login':
+        result = loginUser(data);
+        break;
+      case 'getUsers':
+        result = getUsers();
+        break;
+      case 'addUser':
+        result = addUser(data);
+        break;
+      case 'deleteUser':
+        result = deleteUser(data);
+        break;
       default:
         result = { status: 'error', message: 'Action not found' };
     }
@@ -298,7 +310,70 @@ function updateBookingStatus(data) {
 
 function updateFileStatus(data) {
   const sheet = getSpreadsheet().getSheetByName('Files');
-  // Column 6 คือ Status
   sheet.getRange(data.rowIndex, 6).setValue(data.status);
   return { status: 'success', message: 'อัปเดตสถานะไฟล์สำเร็จ' };
+}
+
+// -------------------------------------------------------------
+// USER MANAGEMENT
+// -------------------------------------------------------------
+
+function getOrCreateUsersSheet() {
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName('Users');
+  if(!sheet) {
+    sheet = ss.insertSheet('Users');
+    sheet.appendRow(['Username', 'Password', 'Role', 'Name']);
+    sheet.appendRow(['admin', 'admin1234', 'admin', 'ผู้ดูแลระบบสูงสุด']);
+  }
+  return sheet;
+}
+
+function loginUser(data) {
+  const sheet = getOrCreateUsersSheet();
+  const users = sheet.getDataRange().getValues();
+  for(let i = 1; i < users.length; i++) {
+    if(users[i][0] === data.username && users[i][1] === data.password) {
+      return { status: 'success', role: users[i][2], name: users[i][3] };
+    }
+  }
+  return { status: 'error', message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
+}
+
+function getUsers() {
+  const sheet = getOrCreateUsersSheet();
+  const data = sheet.getDataRange().getValues();
+  const results = [];
+  for(let i = 1; i < data.length; i++) {
+    if(data[i][0] === "") continue;
+    results.push({
+      rowIndex: i + 1,
+      username: data[i][0],
+      password: data[i][1],
+      role: data[i][2],
+      name: data[i][3]
+    });
+  }
+  return { status: 'success', data: results };
+}
+
+function addUser(data) {
+  const sheet = getOrCreateUsersSheet();
+  
+  // ตรวจสอบชื่อผู้ใช้ซ้ำ
+  const users = sheet.getDataRange().getValues();
+  for(let i = 1; i < users.length; i++) {
+    if(users[i][0] === data.username) {
+      return { status: 'error', message: 'ชื่อผู้ใช้นี้มีอยู่ในระบบแล้ว' };
+    }
+  }
+  
+  sheet.appendRow([data.username, data.password, data.role, data.name]);
+  return { status: 'success', message: 'เพิ่มผู้ใช้งานสำเร็จ' };
+}
+
+function deleteUser(data) {
+  const sheet = getOrCreateUsersSheet();
+  sheet.deleteRow(data.rowIndex);
+  return { status: 'success', message: 'ลบผู้ใช้งานสำเร็จ' };
 }
