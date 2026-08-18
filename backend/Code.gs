@@ -38,7 +38,7 @@ function setupSystem() {
   sheetFiles.appendRow(['Timestamp', 'Teacher Name', 'File Type', 'File URL/Link', 'Drive File ID', 'Status']);
   
   // สร้าง Sheet 3: Supervision
-  let sheetSupervision = ss.insertSheet('Supervision');
+  let sheetSupervision = ss.getSheetByName('Supervision') || ss.insertSheet('Supervision');
   sheetSupervision.appendRow(['Timestamp', 'Teacher Name', 'Supervision Date', 'Strengths', 'Improvements', 'Suggestions', 'Summary']);
   
   // 2. สร้างโฟลเดอร์ใน Google Drive
