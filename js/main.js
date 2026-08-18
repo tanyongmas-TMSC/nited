@@ -458,20 +458,38 @@ const app = {
                     const tbody = document.getElementById('evalHistoryTableBody');
                     if(tbody) {
                         tbody.innerHTML = '';
-                        if(res.data.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="7" class="text-center">ไม่มีข้อมูลประวัติการนิเทศ</td></tr>';
+                        if(!res.data || res.data.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">ไม่มีข้อมูลประวัติการนิเทศ</td></tr>';
                             return;
                         }
                         res.data.forEach(item => {
-                            const dateStr = item['วันที่สอน'] ? new Date(item['วันที่สอน']).toLocaleDateString('th-TH') : '-';
+                            // รองรับทั้งหัวตารางแบบเก่า (ภาษาอังกฤษ) และแบบใหม่ (ภาษาไทย)
+                            let dateVal = item['วันที่สอน'] || item['Supervision Date'] || item['Timestamp'];
+                            let dateStr = '-';
+                            if (dateVal) {
+                                try {
+                                    let d = new Date(dateVal);
+                                    if (!isNaN(d.getTime())) {
+                                        dateStr = d.toLocaleDateString('th-TH');
+                                    }
+                                } catch(e) {}
+                            }
+                            
+                            const teacherName = item['ผู้สอน'] || item['Teacher Name'] || '-';
+                            const supervisor = item['ชื่อผู้นิเทศ'] || '-';
+                            const topic = item['เรื่องที่สอน'] || item['topic'] || '-';
+                            const level = item['ระดับชั้น'] || '-';
+                            const score = item['คะแนนรวม'] || item['Summary'] || 0;
+                            const strengths = item['จุดเด่น'] || item['Strengths'] || '-';
+
                             tbody.innerHTML += `<tr>
                                 <td>${dateStr}</td>
-                                <td>${item['ผู้สอน'] || '-'}</td>
-                                <td>${item['ชื่อผู้นิเทศ'] || '-'}</td>
-                                <td>${item['เรื่องที่สอน'] || '-'}</td>
-                                <td>${item['ระดับชั้น'] || '-'}</td>
-                                <td><span class="badge badge-success">${item['คะแนนรวม'] || 0}</span></td>
-                                <td>${item['จุดเด่น'] || '-'}</td>
+                                <td>${teacherName}</td>
+                                <td>${supervisor}</td>
+                                <td>${topic}</td>
+                                <td>${level}</td>
+                                <td><span class="badge badge-success">${score}</span></td>
+                                <td>${strengths}</td>
                             </tr>`;
                         });
                     }
