@@ -474,7 +474,8 @@ const app = {
             .then(res => res.json())
             .then(res => {
                 // API อาจส่งคืนเป็น Array ตรงๆ หรือ Object { status: 'success', data: [...] }
-                let dataArray = Array.isArray(res) ? res : (res.data || []);\n                app.evalHistoryData = dataArray;
+                let dataArray = Array.isArray(res) ? res : (res.data || []);
+                app.evalHistoryData = dataArray;
                 
                 const tbody = document.getElementById('evalHistoryTableBody');
                 if(tbody) {
