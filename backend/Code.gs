@@ -11,20 +11,30 @@
  * 7. กด "การทำให้ใช้งานได้" (Deploy) แล้วคัดลอก Web App URL ไปใส่ในเว็บ Frontend
  */
 
+// ไอดีของ Google Sheets ที่คุณครูส่งมาให้
+const SPREADSHEET_ID = '1x9Wolq9l1BUdjgm5j9TrS7wgZubaivlebZZI07pew7Y';
+
+function getSpreadsheet() {
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
 function setupSystem() {
-  const props = PropertiesService.getScriptProperties();
+  const ss = getSpreadsheet();
   
-  // 1. สร้าง Google Sheets
-  const ss = SpreadsheetApp.create('Supervision_Database');
-  props.setProperty('SPREADSHEET_ID', ss.getId());
+  // 1. สร้างโฟลเดอร์สำหรับเก็บไฟล์งานใน Google Drive
+  const props = PropertiesService.getScriptProperties();
+  let folderId = props.getProperty('UPLOAD_FOLDER_ID');
+  if(!folderId) {
+    const folder = DriveApp.createFolder('Supervision_Uploads');
+    props.setProperty('UPLOAD_FOLDER_ID', folder.getId());
+  }
   
   // สร้าง Sheet 1: Booking
-  let sheetBooking = ss.getSheets()[0];
-  sheetBooking.setName('Booking');
+  let sheetBooking = ss.getSheetByName('Booking') || ss.insertSheet('Booking');
   sheetBooking.appendRow(['Timestamp', 'Date', 'Time', 'Teacher Name', 'Department', 'Period', 'Subject Name', 'Subject Code', 'Class Level', 'Room', 'Status']);
   
   // สร้าง Sheet 2: Files
-  let sheetFiles = ss.insertSheet('Files');
+  let sheetFiles = ss.getSheetByName('Files') || ss.insertSheet('Files');
   sheetFiles.appendRow(['Timestamp', 'Teacher Name', 'File Type', 'File URL/Link', 'Drive File ID', 'Status']);
   
   // สร้าง Sheet 3: Supervision
@@ -135,12 +145,6 @@ function handleRequest(e, method) {
 // -------------------------------------------------------------
 // FUNCTIONS
 // -------------------------------------------------------------
-
-function getSpreadsheet() {
-  const id = PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
-  if (!id) throw new Error("ระบบยังไม่ได้รับการ Setup กรุณารัน setupSystem ก่อน");
-  return SpreadsheetApp.openById(id);
-}
 
 function getStats() {
   const ss = getSpreadsheet();
