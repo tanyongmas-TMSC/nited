@@ -266,7 +266,9 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้รับการนิเทศ (ผู้สอน)</label>
-                        <input type="text" id="evalTeacherName" name="teacherName" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="ระบุชื่อครูผู้สอน">
+                        <select id="evalTeacherName" name="teacherName" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                            <option value="">กำลังโหลดรายชื่อครู...</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">กลุ่มสาระการเรียนรู้</label>
@@ -359,6 +361,10 @@
                         <label class="block text-sm font-semibold text-slate-700 mb-1">ข้อเสนอแนะอื่นๆ</label>
                         <textarea id="evalSuggestions" name="suggestions" rows="2" class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">คำแนะนำในการประเมินครั้งถัดไป</label>
+                        <textarea id="evalNextSuggestions" name="nextSuggestions" rows="2" class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
                     </div>
                 </section>
 
@@ -405,6 +411,7 @@
                                 <th>ระดับชั้น</th>
                                 <th>คะแนนรวม</th>
                                 <th>ข้อเสนอแนะ</th>
+                                <th>พิมพ์</th>
                             </tr>
                         </thead>
                         <tbody id="evalHistoryTableBody">
@@ -549,8 +556,78 @@
         <h3 id="loaderText" style="color:var(--primary-color);">กำลังดำเนินการ...</h3>
     </div>
 
+    <!-- Printable Report Container -->
+    <div id="printableReport" class="print-only">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 24px; margin: 0;">รายงานผลการนิเทศการสอน</h2>
+            <h3 style="font-size: 18px; margin: 5px 0; font-weight: normal;">ระบบนิเทศภายใน โรงเรียนตันหยงมัส</h3>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 16px;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc; width: 25%;"><strong>ผู้รับการนิเทศ:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc; width: 25%;" id="printTeacher">-</td>
+                <td style="padding: 8px; border: 1px solid #ccc; width: 25%;"><strong>วันที่สอน:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc; width: 25%;" id="printDate">-</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>เรื่องที่สอน:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;" id="printTopic">-</td>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>ระดับชั้น/ห้อง:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;" id="printLevel">-</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>ผู้นิเทศ:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;" colspan="3" id="printSupervisor">-</td>
+            </tr>
+        </table>
+
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 5px;">ผลการประเมิน</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; width: 50%;"><strong>คะแนนรวม:</strong> <span id="printScore">0</span> / 100</td>
+                    <td style="padding: 10px; border: 1px solid #ccc; width: 50%;"><strong>ระดับคุณภาพ:</strong> <span id="printQuality">-</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin: 0 0 10px 0; font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 5px;">ข้อค้นพบและข้อเสนอแนะ</h4>
+            <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; min-height: 80px;">
+                <strong>จุดเด่นที่พบ:</strong><br>
+                <div id="printStrengths" style="margin-top: 5px;">-</div>
+            </div>
+            <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; min-height: 80px;">
+                <strong>จุดที่ควรพัฒนา:</strong><br>
+                <div id="printImprovements" style="margin-top: 5px;">-</div>
+            </div>
+            <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; min-height: 80px;">
+                <strong>ข้อเสนอแนะอื่นๆ:</strong><br>
+                <div id="printSuggestions" style="margin-top: 5px;">-</div>
+            </div>
+            <div style="border: 1px solid #ccc; padding: 15px; min-height: 80px;">
+                <strong>คำแนะนำในการประเมินครั้งถัดไป:</strong><br>
+                <div id="printNextSuggestions" style="margin-top: 5px;">-</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 50px; text-align: center; display: flex; justify-content: space-around;">
+            <div>
+                <p>ลงชื่อ..........................................................</p>
+                <p>(<span id="printSignSupervisor">........................................</span>)</p>
+                <p>ผู้นิเทศ</p>
+            </div>
+            <div>
+                <p>ลงชื่อ..........................................................</p>
+                <p>(<span id="printSignTeacher">........................................</span>)</p>
+                <p>ผู้รับการนิเทศ</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/config.js?v=8"></script>
-    <script src="js/main.js?v=4"></script>
+    <script src="js/main.js?v=6"></script>
 </body>
 </html>

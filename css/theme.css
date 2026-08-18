@@ -259,6 +259,35 @@ tr:hover { background-color: #f1f5f9; }
     height: 100%;
     background-color: rgba(0,0,0,0.5);
 }
+
+/* -------------------------------------------
+   Print Styles
+------------------------------------------- */
+.print-only {
+    display: none;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .print-only, .print-only * {
+        visibility: visible;
+    }
+    .print-only {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .navbar, .navbar-inner, .page, .modal {
+        display: none !important;
+    }
+    @page {
+        margin: 1.5cm;
+    }
+}
 .modal-content {
     background-color: #fefefe;
     margin: 10% auto;

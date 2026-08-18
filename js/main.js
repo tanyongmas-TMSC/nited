@@ -246,6 +246,24 @@ const app = {
                 this.calculateEvalScore();
             }
         });
+
+        // Load teachers into dropdown
+        fetch(CONFIG.GAS_URL + "?action=getUsers")
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    const select = document.getElementById('evalTeacherName');
+                    if(select) {
+                        select.innerHTML = '<option value="">เลือกครูผู้สอน...</option>';
+                        res.data.forEach(user => {
+                            if(user.role === 'teacher') {
+                                select.innerHTML += `<option value="${user.name}">${user.name}</option>`;
+                            }
+                        });
+                    }
+                }
+            })
+            .catch(err => console.error('Failed to load teachers:', err));
     },
 
     renderEvaluationForm: function() {
@@ -331,7 +349,8 @@ const app = {
             totalScore: document.getElementById('displayScore') ? parseInt(document.getElementById('displayScore').innerText) : 0,
             strengths: document.getElementById('evalStrengths') ? document.getElementById('evalStrengths').value : '',
             improvements: document.getElementById('evalImprovements') ? document.getElementById('evalImprovements').value : '',
-            suggestions: document.getElementById('evalSuggestions') ? document.getElementById('evalSuggestions').value : ''
+            suggestions: document.getElementById('evalSuggestions') ? document.getElementById('evalSuggestions').value : '',
+            nextSuggestions: document.getElementById('evalNextSuggestions') ? document.getElementById('evalNextSuggestions').value : ''
         };
 
         fetch(CONFIG.GAS_URL, {
@@ -455,7 +474,7 @@ const app = {
             .then(res => res.json())
             .then(res => {
                 // API อาจส่งคืนเป็น Array ตรงๆ หรือ Object { status: 'success', data: [...] }
-                let dataArray = Array.isArray(res) ? res : (res.data || []);
+                let dataArray = Array.isArray(res) ? res : (res.data || []);\n                app.evalHistoryData = dataArray;
                 
                 const tbody = document.getElementById('evalHistoryTableBody');
                 if(tbody) {
@@ -483,6 +502,7 @@ const app = {
                             const level = item['ระดับชั้น'] || '-';
                             const score = item['คะแนนรวม'] || item['Summary'] || 0;
                             const strengths = item['จุดเด่น'] || item['Strengths'] || '-';
+                            const index = dataArray.indexOf(item);
 
                             tbody.innerHTML += `<tr>
                                 <td>${dateStr}</td>
@@ -492,11 +512,52 @@ const app = {
                                 <td>${level}</td>
                                 <td><span class="badge badge-success">${score}</span></td>
                                 <td>${strengths}</td>
+                                <td><button onclick="app.printReport(${index})" class="p-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"><i class="fas fa-print"></i></button></td>
                             </tr>`;
                         });
                     }
             })
             .catch(err => console.error(err));
+    },
+
+    printReport: function(index) {
+        if(!this.evalHistoryData || !this.evalHistoryData[index]) return;
+        const item = this.evalHistoryData[index];
+        
+        let dateVal = item['วันที่สอน'] || item['Supervision Date'] || item['Timestamp'];
+        let dateStr = '-';
+        if (dateVal) {
+            try {
+                let d = new Date(dateVal);
+                if (!isNaN(d.getTime())) {
+                    dateStr = d.toLocaleDateString('th-TH');
+                }
+            } catch(e) {}
+        }
+        
+        document.getElementById('printTeacher').innerText = item['ผู้สอน'] || item['Teacher Name'] || '-';
+        document.getElementById('printDate').innerText = dateStr;
+        document.getElementById('printTopic').innerText = item['เรื่องที่สอน'] || item['topic'] || '-';
+        document.getElementById('printLevel').innerText = item['ระดับชั้น'] || '-';
+        document.getElementById('printSupervisor').innerText = item['ชื่อผู้นิเทศ'] || '-';
+        
+        const score = item['คะแนนรวม'] || item['Summary'] || 0;
+        document.getElementById('printScore').innerText = score;
+        
+        let quality = "-";
+        if(score < 60) quality = "ต้องปรับปรุง";
+        else if(score < 70) quality = "ยอมรับได้ (ควรปรับปรุง)";
+        else if(score < 80) quality = "ค่อนข้างดี";
+        else if(score < 90) quality = "ดี";
+        else quality = "ดีมาก เป็นตัวอย่างที่ดี";
+        document.getElementById('printQuality').innerText = quality;
+        
+        document.getElementById('printStrengths').innerText = item['จุดเด่น'] || item['Strengths'] || '-';
+        document.getElementById('printImprovements').innerText = item['จุดควรพัฒนา'] || item['Improvements'] || '-';
+        document.getElementById('printSuggestions').innerText = item['ข้อเสนอแนะ'] || item['Suggestions'] || '-';
+        document.getElementById('printNextSuggestions').innerText = item['คำแนะนำในครั้งถัดไป'] || '-';
+        
+        window.print();
     },
 
     loadAdminBookings: function() {
